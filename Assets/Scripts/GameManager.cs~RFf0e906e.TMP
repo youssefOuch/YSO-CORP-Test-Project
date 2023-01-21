@@ -1,0 +1,67 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public class GameManager : MonoBehaviour
+{
+    [SerializeField] GameObject prefabPlatform;
+    [SerializeField] Ball ball;
+    GameObject lastPlatform;
+    float deltaAngleRadiant = Mathf.PI / 6;
+    float currentAngleRadiant;
+    // Start is called before the first frame update
+    void Start()
+    {
+        currentAngleRadiant = 9 * deltaAngleRadiant;
+
+        lastPlatform = Instantiate(prefabPlatform,
+        new Vector3(Mathf.Cos(currentAngleRadiant), Mathf.Sin(currentAngleRadiant), 0),
+        Quaternion.identity, transform);
+
+        for (int i = 0; i < 20; i++)
+        {
+            GeneratePlatform();
+        }
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if(ball.transform.position.y < -10)
+        {
+            SceneManager.LoadScene(0);
+        }
+
+        if (Input.GetMouseButton(0))
+        {
+            Vector3 temp = transform.eulerAngles;
+            temp.z += Input.GetAxis("Mouse X");
+            transform.eulerAngles = temp;
+            currentAngleRadiant += temp.z * Mathf.Deg2Rad;
+        }
+
+        while(Vector3.Distance(lastPlatform.transform.position, ball.transform.position) < 2)
+        {
+            GeneratePlatform();
+        }
+    }
+
+    private void GeneratePlatform()
+    {
+        if (Random.Range(0, 3) == 0)
+        {
+            currentAngleRadiant -= deltaAngleRadiant;
+        }
+        else
+        {
+            currentAngleRadiant += deltaAngleRadiant;
+        }
+        
+        lastPlatform = Instantiate(prefabPlatform,
+    new Vector3(Mathf.Cos(currentAngleRadiant), Mathf.Sin(currentAngleRadiant), lastPlatform.transform.position.z + 1),
+    Quaternion.Euler(0f, 0f,currentAngleRadiant * Mathf.Rad2Deg + 90f), transform);
+
+        Debug.Log("current: " + currentAngleRadiant + "    " + "plat" + lastPlatform.transform.eulerAngles.z);
+    }
+}
